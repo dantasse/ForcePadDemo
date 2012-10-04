@@ -57,12 +57,20 @@ void loop() {
   
 //  delay(10000);
 
+
   int incomingByte = 0;   // for incoming serial data
   // send data only when you receive data:
+  
   if (Serial.available() > 0) {
     // read the incoming byte:
     incomingByte = Serial.read();
-    colorWipe(Wheel(incomingByte), 1000);
+
+    if (incomingByte < 128) {
+        colorWipe(Wheel(180 - (95 * (incomingByte*1.0 / 128))), 1000);
+    }
+    else {
+        colorWipe(Wheel(85 - (58 * ((incomingByte*1.0 - 128) / 256))), 1000);
+    }
   }
   strip.show();
 

@@ -1,4 +1,3 @@
-import cc.arduino.*;
 import hypermedia.net.*;
 import processing.serial.*;
 
@@ -6,6 +5,7 @@ int PORT_RX=12345;
 String HOST_IP = "127.0.0.1";//IP Address of the PC in which this App is running
 UDP udp; // For receiving from the ForcePad_UDPSender
 Serial serial;
+PImage bg;
 
 // Buffer for each points (at most 5 points)
 int[] px = new int[5];    // 1000 ~ 5900
@@ -14,9 +14,12 @@ int[] pz = new int[5];
 int[] pF = new int[5];    // 0 ~ 1000
 
 void setup() {
-  size(800, 500);
+  size(800, 600);
   udp= new UDP(this, PORT_RX, HOST_IP);
   udp.listen(true);
+  
+  bg = loadImage("screenshot.png");
+  bg.resize(800, 600);
   
   // The communication with the Arduino is over the serial port
   // (it's the second one on the list, COM3, for some reason...)
@@ -28,9 +31,10 @@ int smoothedPressure = 0;
 
 void draw() {
   
-  background(0);
+  background(bg);
   ellipseMode(CENTER);
   int totalForce = 0;
+  int numFingers = 0;
   for(int i=0;i<5;i++) {
     if(px[i]<=0)
       continue;
@@ -41,12 +45,16 @@ void draw() {
     fill(255);
     ellipse(drawX, drawY, force, force);
     totalForce += force;
+    numFingers++;
+  }
+  if(numFingers > 0) {
+    totalForce /= numFingers;
+    totalForce += 7;
   }
   
-
-  smoothedPressure = constrain(int(.99*smoothedPressure + .01*totalForce), 0, 255);
+  smoothedPressure = constrain(int(.995*smoothedPressure + .005*totalForce), 0, 255);
   
-  if(millis() - delayMillis > 50) {
+  if(millis() - delayMillis > 33) {
     serial.write(byte(smoothedPressure));
     delayMillis = millis();
   }
