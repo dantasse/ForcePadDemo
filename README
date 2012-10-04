@@ -1,2 +1,7 @@
 ForcePadDemo
 UIST contest 2012
+
+1. Download SunjunK's ForcePad_UDPSender.exe from the contest forum
+2. Put strandtest_jenny on the arduino and hook up all the lights
+3. Run ForcePadDemo in Processing
+4. Fiddle with it a bunch because there's no way it all just worked.
