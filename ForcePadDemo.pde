@@ -4,10 +4,8 @@ import processing.serial.*;
 
 int PORT_RX=12345;
 String HOST_IP = "127.0.0.1";//IP Address of the PC in which this App is running
-UDP udp;//Create UDP object for recieving
-Arduino arduino;
-int ledPin = 13;
-boolean ledOn = false;
+UDP udp; // For receiving from the ForcePad_UDPSender
+Serial serial;
 
 // Buffer for each points (at most 5 points)
 int[] px = new int[5];    // 1000 ~ 5900
@@ -20,22 +18,15 @@ void setup() {
   udp= new UDP(this, PORT_RX, HOST_IP);
   udp.listen(true);
   
-  println(Arduino.list());
-  arduino = new Arduino(this, Arduino.list()[0], 57600);
-  arduino.pinMode(ledPin, Arduino.OUTPUT);
+  // The communication with the Arduino is over the serial port
+  // (it's the second one on the list, COM3, for some reason...)
+  serial = new Serial(this, Serial.list()[1], 9600);
+}
 
-}
-void mousePressed() {
-  ledOn = !ledOn;
-  println("mousePressed, ledOn = " + ledOn);
-}
+int delayMillis = millis(); // wait this many ms between updates
+int smoothedPressure = 0;
 
 void draw() {
-  if (ledOn) {
-//    arduino.digitalWrite(ledPin, Arduino.HIGH);
-  } else {
-//    arduino.digitalWrite(ledPin, Arduino.LOW);
-  }
   
   background(0);
   ellipseMode(CENTER);
@@ -51,10 +42,17 @@ void draw() {
     ellipse(drawX, drawY, force, force);
     totalForce += force;
   }
-  if (totalForce > 100) {
-    arduino.digitalWrite(ledPin, Arduino.HIGH);
+  
+
+  smoothedPressure = constrain(int(.99*smoothedPressure + .01*totalForce), 0, 255);
+  
+  if(millis() - delayMillis > 50) {
+    serial.write(byte(smoothedPressure));
+    delayMillis = millis();
   }
-} 
+}
+
+
 
 byte[] receiveBuffer = new byte[1000];
 int bufferIndex;
