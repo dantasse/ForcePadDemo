@@ -52,7 +52,8 @@ void draw() {
     totalForce += 7;
   }
   
-  smoothedPressure = constrain(int(.995*smoothedPressure + .005*totalForce), 0, 255);
+  float pressureAndFingers = constrain(smoothedPressure * 1.0 + (.3 * numFingers-1),0, 255);
+  smoothedPressure = constrain(int(.995*pressureAndFingers + .005*totalForce), 0, 255);
   
   if(millis() - delayMillis > 33) {
     serial.write(byte(smoothedPressure));
